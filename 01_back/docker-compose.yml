@@ -1,0 +1,37 @@
+version: "3"
+
+# DBの設定
+services:
+  db:
+    build: ./db
+    volumes:
+      - ./db_data:/home/dynamodblocal/data
+    ports:
+      - 7145:8000
+    command: -jar DynamoDBLocal.jar -dbPath ./data
+    restart: always
+
+  dbadmin:
+    image: instructure/dynamo-local-admin
+    networks:
+      - default
+    ports:
+      - 7146:8001
+    environment:
+      DYNAMO_ENDPOINT: http://db:8000/
+    restart: always
+
+  api:
+    build: ./api
+    volumes: 
+      - ./api/src:/go/src/
+    ports:
+      - 7147:8002
+    tty: true # コンテナの起動永続化
+    restart: always
+    environment:
+      PORT: 8002
+
+volumes:
+  db_data:
+
